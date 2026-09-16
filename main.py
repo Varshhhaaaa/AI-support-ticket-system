@@ -32,12 +32,13 @@ class TicketDB(Base):
     description = Column(String)
     status = Column(String, default="Open")
     category = Column(String)
-priority = Column(String)
+    priority = Column(String)
 
 
 Base.metadata.create_all(bind=engine)
 
-# Data we accept from the API
+
+# Data accepted from API
 class Ticket(BaseModel):
     title: str
     description: str
@@ -47,6 +48,8 @@ class Ticket(BaseModel):
 def home():
     return {"message": "AI Support Ticket System is running!"}
 
+
+# Local fallback triage
 def triage_ticket(title: str, description: str):
     text = (title + " " + description).lower()
 
@@ -65,21 +68,24 @@ def triage_ticket(title: str, description: str):
         priority = "Medium"
 
     return category, priority
-    return response.output_text
+
 
 @app.get("/tickets")
 def get_tickets():
     db = SessionLocal()
     tickets = db.query(TicketDB).all()
     db.close()
-
     return tickets
+
 
 @app.get("/tickets/{ticket_id}")
 def get_ticket(ticket_id: int):
     db = SessionLocal()
     ticket = db.query(TicketDB).filter(TicketDB.id == ticket_id).first()
     db.close()
+
+    if ticket is None:
+        return {"message": "Ticket not found"}
 
     return ticket
 
@@ -88,7 +94,10 @@ def get_ticket(ticket_id: int):
 def create_ticket(ticket: Ticket):
     db = SessionLocal()
 
-    category, priority = triage_ticket(ticket.title, ticket.description)
+    category, priority = triage_ticket(
+        ticket.title,
+        ticket.description
+    )
 
     new_ticket = TicketDB(
         title=ticket.title,
@@ -104,24 +113,14 @@ def create_ticket(ticket: Ticket):
 
     return new_ticket
 
-@app.post("/tickets")
-def create_ticket():
-    ...
 
-@app.get("/tickets")
-def get_tickets():
-    ...
-
-@app.get("/tickets/{ticket_id}")
-def get_ticket(ticket_id: int):
-    ...
-
-# PASTE THE NEW CODE HERE
 @app.put("/tickets/{ticket_id}")
 def update_ticket(ticket_id: int, status: str):
     db = SessionLocal()
 
-    ticket = db.query(TicketDB).filter(TicketDB.id == ticket_id).first()
+    ticket = db.query(TicketDB).filter(
+        TicketDB.id == ticket_id
+    ).first()
 
     if ticket is None:
         db.close()
@@ -134,11 +133,14 @@ def update_ticket(ticket_id: int, status: str):
 
     return ticket
 
+
 @app.delete("/tickets/{ticket_id}")
 def delete_ticket(ticket_id: int):
     db = SessionLocal()
 
-    ticket = db.query(TicketDB).filter(TicketDB.id == ticket_id).first()
+    ticket = db.query(TicketDB).filter(
+        TicketDB.id == ticket_id
+    ).first()
 
     if ticket is None:
         db.close()
@@ -149,4 +151,3 @@ def delete_ticket(ticket_id: int):
     db.close()
 
     return {"message": "Ticket deleted successfully"}
-
