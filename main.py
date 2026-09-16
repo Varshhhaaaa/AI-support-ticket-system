@@ -3,6 +3,8 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -50,19 +52,49 @@ def home():
 
 
 # Local fallback triage
+# Simple ML model for ticket category
+training_texts = [
+    "payment failed",
+    "money deducted",
+    "refund not received",
+    "charged for order",
+    "cannot login",
+    "forgot password",
+    "account locked",
+    "website crashing",
+    "application error",
+    "system bug",
+    "feature not working",
+]
+
+training_labels = [
+    "Billing",
+    "Billing",
+    "Billing",
+    "Billing",
+    "Account",
+    "Account",
+    "Account",
+    "Technical",
+    "Technical",
+    "Technical",
+    "Technical",
+]
+
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(training_texts)
+
+model = LogisticRegression()
+model.fit(X, training_labels)
+
+
 def triage_ticket(title: str, description: str):
-    text = (title + " " + description).lower()
+    text = title + " " + description
 
-    if "payment" in text or "money" in text or "refund" in text:
-        category = "Billing"
-    elif "login" in text or "password" in text or "account" in text:
-        category = "Account"
-    elif "crash" in text or "error" in text or "bug" in text:
-        category = "Technical"
-    else:
-        category = "General"
+    features = vectorizer.transform([text])
+    category = model.predict(features)[0]
 
-    if "money" in text or "payment" in text or "crash" in text:
+    if "urgent" in text.lower() or "failed" in text.lower():
         priority = "High"
     else:
         priority = "Medium"
