@@ -5,8 +5,9 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import declarative_base, sessionmaker
+
+from database import engine, SessionLocal, Base
+from models import TicketDB
 
 app = FastAPI()
 
@@ -14,31 +15,8 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # SQLite database
-DATABASE_URL = "sqlite:///./tickets_ai.db"
-
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}
-)
-
-SessionLocal = sessionmaker(bind=engine)
-Base = declarative_base()
-
-
-# Database table
-class TicketDB(Base):
-    __tablename__ = "tickets"
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    description = Column(String)
-    status = Column(String, default="Open")
-    category = Column(String)
-    priority = Column(String)
-
 
 Base.metadata.create_all(bind=engine)
-
 
 # Data accepted from API
 class Ticket(BaseModel):
