@@ -1,20 +1,15 @@
 # AI Support Ticket Triage & Management System
 
-A backend system that automatically analyzes customer support tickets, classifies them into categories, assigns priority, and provides REST APIs to manage tickets.
+A Python backend application that uses FastAPI and machine learning to classify customer support tickets, assign priority, and store ticket information in a SQLite database.
 
 ## Features
 
-* Create, view, update, and delete support tickets
-* Automatically classify tickets using Machine Learning
-* Categorize tickets into:
-
-  * Billing
-  * Account
-  * Technical
-* Automatically assign ticket priority
-* Store ticket data using SQLite
-* REST APIs built with FastAPI
-* Interactive API documentation using Swagger UI
+* **Ticket Management:** Create, view, update, and delete support tickets through REST API endpoints.
+* **AI Ticket Classification:** Uses TF-IDF and Logistic Regression to classify tickets into categories such as Billing, Account, Technical, and General.
+* **Priority Assignment:** Analyzes ticket information and assigns a priority level based on the issue.
+* **Data Validation:** Uses Pydantic models to validate incoming API requests.
+* **Database Storage:** Uses SQLAlchemy with SQLite to store and manage ticket records.
+* **Interactive API Documentation:** FastAPI Swagger UI is available for testing the endpoints.
 
 ## Tech Stack
 
@@ -26,91 +21,124 @@ A backend system that automatically analyzes customer support tickets, classifie
 * **scikit-learn**
 * **TF-IDF**
 * **Logistic Regression**
+* **Git & GitHub**
 
 ## How It Works
 
 1. A user submits a support ticket through the API.
-2. The ticket title and description are analyzed.
-3. TF-IDF converts the text into numerical features.
-4. A Logistic Regression model predicts the ticket category.
-5. The system assigns a priority based on the ticket content.
-6. The ticket is stored in the SQLite database.
+2. FastAPI validates the incoming request using Pydantic.
+3. The ticket title and description are processed using TF-IDF.
+4. The Logistic Regression model predicts the ticket category.
+5. The application determines the ticket priority.
+6. The ticket is stored in the SQLite database using SQLAlchemy.
+7. The stored ticket can later be retrieved, updated, or deleted through the API.
 
 ## API Endpoints
 
-| Method | Endpoint               | Description                 |
-| ------ | ---------------------- | --------------------------- |
-| GET    | `/`                    | Check if the API is running |
-| GET    | `/tickets`             | Get all tickets             |
-| GET    | `/tickets/{ticket_id}` | Get a specific ticket       |
-| POST   | `/tickets`             | Create a new ticket         |
-| PUT    | `/tickets/{ticket_id}` | Update a ticket             |
-| DELETE | `/tickets/{ticket_id}` | Delete a ticket             |
+| Method | Endpoint        | Description                         |
+| ------ | --------------- | ----------------------------------- |
+| GET    | `/`             | Checks whether the API is running   |
+| POST   | `/tickets`      | Creates and classifies a new ticket |
+| GET    | `/tickets`      | Retrieves stored tickets            |
+| GET    | `/tickets/{id}` | Retrieves a specific ticket         |
+| PUT    | `/tickets/{id}` | Updates an existing ticket          |
+| DELETE | `/tickets/{id}` | Deletes a ticket                    |
 
 ## Project Structure
 
 ```text
-ai-support-ticket-system/
+AI-support-ticket-system/
 │
 ├── main.py
 ├── database.py
 ├── models.py
 ├── requirements.txt
 ├── README.md
-├── .gitignore
-└── venv/
+└── .gitignore
 ```
 
-## How to Run
+### File Overview
 
-Clone the repository:
+* `main.py` — FastAPI application, API routes, ticket classification and priority logic
+* `database.py` — Database engine and SQLAlchemy session setup
+* `models.py` — Database table/model definitions
+* `requirements.txt` — Python dependencies
+* `.gitignore` — Files and folders excluded from Git
+
+## Getting Started
+
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Varshhhaaaa/AI-support-ticket-system.git
+git clone https://github.com/Varshhhaaa/AI-support-ticket-system.git
 cd AI-support-ticket-system
 ```
 
-Create and activate a virtual environment:
+### 2. Create a virtual environment
 
 ```bash
 python -m venv venv
+```
+
+Activate it:
+
+**Windows:**
+
+```bash
 venv\Scripts\activate
 ```
 
-Install the dependencies:
+**macOS/Linux:**
+
+```bash
+source venv/bin/activate
+```
+
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Start the FastAPI server:
+### 4. Run the application
 
 ```bash
-python -m uvicorn main:app --reload
+uvicorn main:app --reload
 ```
 
-Open Swagger UI:
+### 5. Open Swagger UI
+
+Visit:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-## Example
+You can use Swagger UI to send requests and test the API endpoints.
 
-A ticket such as:
+## Example Ticket
 
-> **Title:** Payment failed
-> **Description:** Money was deducted but my order was not placed.
+### Request
 
-can be automatically classified as:
+```json
+{
+  "title": "Payment transaction failed",
+  "description": "My payment went through but my premium status is still inactive."
+}
+```
 
-* **Category:** Billing
-* **Priority:** High
+### Example Result
+
+```text
+Category: Billing
+Priority: High
+Status: Open
+```
 
 ## Future Improvements
 
-* Add authentication and authorization
-* Add a frontend dashboard
-* Improve the ML model with a larger real-world dataset
-* Add ticket search and filtering
-* Deploy the application to the cloud
+* Add authentication and authorization.
+* Migrate from SQLite to PostgreSQL.
+* Improve the ticket classification model with a larger training dataset.
+* Add automated tests for API endpoints and classification logic.
+* Add a frontend dashboard for viewing and managing tickets.
